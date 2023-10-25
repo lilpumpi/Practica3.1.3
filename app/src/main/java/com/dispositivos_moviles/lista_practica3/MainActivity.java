@@ -43,25 +43,23 @@ public class MainActivity extends AppCompatActivity {
 
                 if(pos >= 0){
 
-                    //Creamos el cuadro de dialogo para borrar o editar
+                    //Creamos el cuadro de dialogo confirmar el borrado
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("Opciones");
-                    String[] opciones = {"Borrar", "Editar"};
+                    builder.setTitle("Borrar Item");
+                    builder.setMessage("Estas seguo de que desea borrar el elemento?");
+                    String[] opciones = {"Cancelar", "Confirmar"};
 
-                    builder.setItems(opciones, new DialogInterface.OnClickListener() {
+                    //Creamos el boton de confirmar
+                    builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialog, int opcion) {
-                            //Dependiendo de la opcion seleccionada
-                            if(opcion == 0){ //Borrar
-                                elementos.remove(pos);
-                                adapter.notifyDataSetChanged();
-                                updateStatus();
-                            } else if(opcion == 1){ //Modificar
-                                modificarElemento(pos);
-                            }
+                        public void onClick(DialogInterface dialog, int which) {
+                            elementos.remove(pos); //Eliminamos el elemento seleccionado
+                            adapter.notifyDataSetChanged();
+                            updateStatus();
                         }
                     });
 
+                    builder.setNegativeButton("Cancelar", null);
                     builder.create().show();
 
                 }
@@ -69,6 +67,17 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+
+        //Habilitamos la edicion con pulsacion corta
+        lvCompra.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
+                // Al hacer una pulsación simple, permite al usuario editar el elemento
+                modificarElemento(pos);
+            }
+        });
+
 
         //Listener en el boton de Añadir para ejecutar el metodo Add cuando se pulse
         btAdd.setOnClickListener(new View.OnClickListener() {
