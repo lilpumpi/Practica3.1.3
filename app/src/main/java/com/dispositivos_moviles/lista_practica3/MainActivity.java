@@ -3,165 +3,250 @@ package com.dispositivos_moviles.lista_practica3;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<String> elementos; //Almacenará los elementos que se añadan a la lista
-    private ArrayAdapter<String> adapter; //Adapta la lista para mostrarlos en el ListView
-
+    private ArrayList<Actividad> actividades; //Lista con las Actividades
+    private ArrayList<String> nombres; //Lista con los nombres de las actividades para mostrarlas en el ListView
+    private ArrayAdapter<String> adapter; //Adaptador para mostrar la lista en el ListView
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ListView lvCompra = (ListView) findViewById(R.id.lvCompra);
-        Button btAdd = (Button) findViewById(R.id.button2);
+        ListView lvActividades = (ListView) findViewById(R.id.lvCompra);
+        Button bAdd = (Button) findViewById(R.id.button2);
 
-        elementos = new ArrayList<String>();
-
-        //Creamos el adapter
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, elementos);
-        lvCompra.setAdapter(adapter);
-
-        //Habilitamos la eliminación de los elementos con pulsacion larga
-        lvCompra.setLongClickable(true);
-        lvCompra.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        //Habilitamos un listener del boton para poder añadir una Actividad
+        bAdd.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int pos, long l) {
+            public void onClick(View v) {
+                addActividad();
+            }
+        });
 
-                if(pos >= 0){
+        //Mostramos el ListView con las actividades
+        actividades = new ArrayList<Actividad>();
+        nombres = new ArrayList<String>();
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, nombres);
 
-                    //Creamos el cuadro de dialogo confirmar el borrado
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("Borrar Item");
-                    builder.setMessage("Estas seguo de que desea borrar el elemento?");
-                    String[] opciones = {"Cancelar", "Confirmar"};
+        lvActividades.setAdapter(adapter);
 
-                    //Creamos el boton de confirmar
-                    builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            elementos.remove(pos); //Eliminamos el elemento seleccionado
-                            adapter.notifyDataSetChanged();
-                            updateStatus();
-                        }
-                    });
-
-                    builder.setNegativeButton("Cancelar", null);
-                    builder.create().show();
-
+        //Habilitamos la pulsación larga para editar las Actividades creadas
+        lvActividades.setLongClickable(true);
+        lvActividades.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                if(position >= 0) {
+                    //Mostramos las opciones
+                    mostrarOpciones(position);
                 }
 
-                return true;
+                return false;
             }
         });
 
 
-        //Habilitamos la edicion con pulsacion corta
-        lvCompra.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
-                // Al hacer una pulsación simple, permite al usuario editar el elemento
-                modificarElemento(pos);
-            }
-        });
-
-
-        //Listener en el boton de Añadir para ejecutar el metodo Add cuando se pulse
-        btAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addElement();
-            }
-        });
     }
 
-    //Añade un elemento al la lista
-    private void addElement(){
+    //Metoodo para añadir una nueva Actividad
+    private void addActividad() {
+        final EditText edText = new EditText(this); // Para que el usuario introduzca el nombre de la nueva actividad
+        final Calendar calendar = Calendar.getInstance(); // Para almacenar la fecha límite
 
-        final EditText edText = new EditText(this); //Creamos un editText para que el usuario escriba el nuevo elemento
+        // Almacenamos la fecha actual para que sea la que se muestre al abrir el DatePickerDialog
+        int currentYear = calendar.get(Calendar.YEAR);
+        int currentMonth = calendar.get(Calendar.MONTH);
+        int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
 
-        //Creamos un AlertDialog para que el usuario añada un elemento
+        // Creamos un AlertDialog para que introduzca el nombre de la nueva Actividad
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Añadir nuevo item");
-        builder.setMessage("Escriba el nombre del Item que deseas añadir");
+        builder.setTitle("Nueva Actividad");
+        builder.setMessage("Escriba el nombre de la nueva actividad");
+
+        // Agregar un EditText para que introduzca el nombre
         builder.setView(edText);
 
-        //Creamos un boton positivo para añadir el elemento nuevo
-        builder.setPositiveButton("Añadir", new DialogInterface.OnClickListener() {
+        //Creamos un DatePickerDialog para seleccionar la fecha límite, lo mostraremos al pulsar el boton de crear
+        DatePickerDialog elegirFecha = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String newElement = edText.getText().toString();
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                // Guardamos en el objeto calendar la fecha que ha introducido el usuario
+                calendar.set(year, month, dayOfMonth);
 
-                //Comprobamos que haya escrito algo
-                if(!newElement.isEmpty()){
-                    adapter.add(newElement);
+                String nombre = edText.getText().toString();
+                // Nos aseguramos de que haya introducido un nombre
+                if (!nombre.isEmpty()) {
+                    // Creamos la actividad y la añadimos a la lista
+                    Actividad nuevaActividad = new Actividad(nombre, calendar.getTime());
+                    actividades.add(nuevaActividad);
+                    nombres.add(nombre);
+                    adapter.notifyDataSetChanged();
+
+                    // Actualizamos el estado
                     updateStatus();
-                } else{
+                } else {
                     Toast.makeText(getApplicationContext(), "Debes escribir un nombre", Toast.LENGTH_LONG).show();
                 }
             }
+        }, currentYear, currentMonth, currentDay);
+
+
+        builder.setPositiveButton("Crear", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //Mostramos el DatePickerDialog
+                elegirFecha.setTitle("Fecha de Caducidad");
+                elegirFecha.setMessage("Selecciona la fecha de caducidad de la Actividad");
+                elegirFecha.show();
+            }
         });
 
-
-        //Creamos un boton negativo para cancelar la operacion
         builder.setNegativeButton("Cancelar", null);
         builder.create().show();
-
     }
 
 
-    //Modificar elemento
-    private void modificarElemento(int pos){
+    //Metodo para mostrar las opciones de una Actividad seleccionada
+    private void mostrarOpciones(int pos) {
+        final Actividad actividad = actividades.get(pos);
 
-        final EditText edText = new EditText(this); //Creamos un editText para que el usuario escriba el nuevo elemento
-
-        //Creamos un AlertDialog para que el usuario mdoifique el elemento
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Modificar item");
-        builder.setMessage("Escriba el nuevo nombre del Item");
+        builder.setTitle(actividad.getNombre());
+        String[] opciones = {"Borrar", "Modificar"};
+
+        builder.setItems(opciones, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int opcion) {
+                if (opcion == 0) { // Borrar
+                    borrarActividad(actividad);
+                } else if (opcion == 1) { // Modificar
+                    editarActividad(actividad, pos);
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancelar", null);
+        builder.create().show();
+    }
+
+
+    //Codigo para modificar Actividad, similar al de addActividad
+    private void editarActividad(Actividad actividad, int pos){
+        final EditText edText = new EditText(this); // Para que el usuario introduzca el nuevo nombre
+        final Calendar calendar = Calendar.getInstance(); // Para almacenar la nueva fecha límite
+
+        // Almacenamos la fecha del objeto para que sea la que se muestre al abrir el DatePickerDialog
+        calendar.setTime(actividad.getFechaLimite());
+        int oldYear = calendar.get(Calendar.YEAR);
+        int oldMonth = calendar.get(Calendar.MONTH);
+        int oldDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        //Mostramos el nombre actual
+        edText.setText(actividad.getNombre());
+
+        // Creamos un AlertDialog para que introduzca el nuevo nombre de la Actividad
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(actividad.getNombre());
+        builder.setMessage("Escriba el nuevo nombre");
+
+        // Agregar un EditText para que introduzca el nombre
         builder.setView(edText);
 
-        //Creamos un boton positivo para confirmar el cambio
+        //Creamos un DatePickerDialog para seleccionar la fecha límite, lo mostraremos al pulsar el boton de crear
+        DatePickerDialog elegirFecha = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                // Guardamos en el objeto calendar la fecha que ha introducido el usuario
+                calendar.set(year, month, dayOfMonth);
+
+                String nombre = edText.getText().toString();
+                // Nos aseguramos de que haya introducido un nombre
+                if (!nombre.isEmpty()) {
+                    //Actualizamos la actividad
+                    actividad.setNombre(nombre);
+                    actividad.setFechaLimite(calendar.getTime());
+                    nombres.set(pos, actividad.getNombre());
+                    adapter.notifyDataSetChanged();
+
+                    // Actualizamos el estado
+                    updateStatus();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Debes escribir un nombre", Toast.LENGTH_LONG).show();
+                }
+            }
+        }, oldYear, oldMonth, oldDay);
+
+
         builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                String newElement = edText.getText().toString();
-
-                //Comprobamos que haya escrito algo
-                if(!newElement.isEmpty()){
-                    elementos.set(pos, newElement);
-                    adapter.notifyDataSetChanged();
-                    updateStatus();
-                } else{
-                    Toast.makeText(getApplicationContext(), "Debes escribir un nombre", Toast.LENGTH_LONG).show();
-                }
+                //Mostramos el DatePickerDialog
+                elegirFecha.setTitle("Fecha de Caducidad");
+                elegirFecha.setMessage("Selecciona la fecha de caducidad de la Actividad");
+                elegirFecha.show();
             }
         });
 
-
-        //Creamos un boton negativo para cancelar la operacion
         builder.setNegativeButton("Cancelar", null);
         builder.create().show();
+    }
 
+    //Codigo para eliminar Actividad
+    private void borrarActividad(Actividad actividad){
+        actividades.remove(actividad);
+        adapter.notifyDataSetChanged();
+        nombres.remove(actividad.getNombre());
+        updateStatus();
+    }
+
+    //Actualiza el numero de actividades
+    private void updateStatus(){
+        TextView tvCantidad = (TextView) findViewById(R.id.tvCantidad);
+        int cantidad = adapter.getCount();
+
+        tvCantidad.setText(Integer.toString(cantidad));
+    }
+
+    //Cuando la app pasa a segundo plano, haremos las comprobaciones de las fechas
+    protected void onResume(){
+        super.onResume();
+
+        //Obtenemos la fecha actual
+        Date fechaActual = new Date();
+
+        //Recorremos la lista de las actividades para comprobar sus fechas
+        for(Actividad actividad: actividades){
+            Date fechaLimite = actividad.getFechaLimite();
+            if(fechaActual.after(fechaLimite)){
+                mostrarAdvertencia(actividad);
+            }
+        }
     }
 
 
-    //Actualizamos los datos
-    private void updateStatus(){
-        TextView tvCantidad = (TextView) findViewById(R.id.tvCantidad);
-        tvCantidad.setText(Integer.toString(adapter.getCount()));
+    //Mostraremos los cuadros de dialogo para advertir de que actividades han caducado
+    private void mostrarAdvertencia(Actividad actividad){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("ADVERTENCIA");
+        builder.setMessage("La actividad \"" + actividad.getNombre() + "\" ha caducado");
+        builder.setNegativeButton("Aceptar", null);
+        builder.create().show();
     }
 }
