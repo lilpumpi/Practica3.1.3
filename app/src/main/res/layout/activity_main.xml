@@ -8,51 +8,61 @@
 
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="367dp"
-        android:layout_height="583dp"
-        android:layout_marginTop="28dp"
+        android:layout_width="368dp"
+        android:layout_height="489dp"
+        android:layout_marginTop="4dp"
         android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.489"
+        app:layout_constraintHorizontal_bias="0.488"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/bStats">
 
         <ListView
-            android:id="@+id/lvCompra"
+            android:id="@+id/lv_tablaEntrenos"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="356dp"
+        android:layout_height="74dp"
+        android:layout_marginTop="32dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.49"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="TABLA ENTRENAMIENTOS"
+            android:textAlignment="textStart"
+            android:textSize="30sp" />
+    </LinearLayout>
+
     <Button
-        android:id="@+id/button2"
-        android:layout_width="164dp"
-        android:layout_height="51dp"
+        android:id="@+id/bAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         android:text="Añadir"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        tools:layout_editor_absoluteX="22dp" />
+        app:layout_constraintEnd_toStartOf="@+id/bStats"
+        app:layout_constraintHorizontal_bias="0.482"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
 
-    <TextView
-        android:id="@+id/tvNum"
-        android:layout_width="77dp"
-        android:layout_height="34dp"
-        android:layout_marginStart="52dp"
-        android:layout_marginTop="48dp"
-        android:text="Num:"
-        android:textSize="20sp"
-        app:layout_constraintStart_toEndOf="@+id/button2"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
-
-    <TextView
-        android:id="@+id/tvCantidad"
-        android:layout_width="63dp"
-        android:layout_height="33dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="48dp"
-        android:text="0"
-        android:textAlignment="textEnd"
-        android:textSize="20sp"
-        app:layout_constraintStart_toEndOf="@+id/tvNum"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+    <Button
+        android:id="@+id/bStats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="140dp"
+        android:text="Estadisticas"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
